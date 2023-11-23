@@ -1,0 +1,179 @@
+<script>
+    const { createApp, ref } = Vue;
+
+    const app = createApp({
+        data() {
+            return {
+                userLoginInfo: {
+                    username: 'guest',
+                    password: 'guest',
+                },
+                accessToken: null,
+                user: null,
+                environmentsPageInfo: {
+                    page: 1,
+                    pageSize: 10,
+                },
+                environments: null,
+                selectedEnvironment: null,
+                experimentsPageInfo: {
+                    page: 1,
+                    pageSize: 10,
+                },
+                experiments: null,
+                selectedExperiment: null,
+                runs: null,
+                variables: null,
+                varNames: null,
+            }
+        },
+        methods: {
+            loadAccessToken() {
+                $.ajax({
+                    url: "{{ url_for('login_for_access_token') }}",
+                    method: 'post',
+                    data: this.userLoginInfo,
+                    success: (result) => {
+                        this.accessToken = result.access_token;
+                    }
+                });
+            },
+            loadUser() {
+                if (this.accessToken === null) {
+                    return;
+                };
+                $.ajax({
+                    url: "{{ url_for('read_users_me') }}",
+                    type: 'GET',
+                    beforeSend: (xhr) => {
+                        xhr.setRequestHeader('Authorization', 'Bearer ' + this.accessToken);
+                    },
+                    data: {},
+                    success: (result) => {
+                        this.user = result;
+                    },
+                    error: function () { },
+                });
+            },
+            loadEnvironments() {
+                if (this.accessToken === null) {
+                    return;
+                };
+                $.ajax({
+                    url: "{{ url_for('list_environments') }}",
+                    type: 'GET',
+                    beforeSend: (xhr) => {
+                        xhr.setRequestHeader('Authorization', 'Bearer ' + this.accessToken);
+                    },
+                    data: {
+                        'page': this.environmentsPageInfo.page,
+                        'page_size': this.environmentsPageInfo.pageSize,
+                    },
+                    success: (result) => {
+                        this.environments = result;
+                    },
+                    error: function () { },
+                });
+            },
+            loadExperiments() {
+                $.ajax({
+                    url: "{{ url_for('list_experiments') }}",
+                    type: 'GET',
+                    beforeSend: (xhr) => {
+                        xhr.setRequestHeader('Authorization', 'Bearer ' + this.accessToken);
+                    },
+                    data: {
+                        'env_id': this.selectedEnvironment.id,
+                        'page': this.experimentsPageInfo.page,
+                        'page_size': this.experimentsPageInfo.pageSize,
+                    },
+                    success: (result) => {
+                        this.experiments = result;
+                    },
+                    error: function () { },
+                });
+            },
+            loadExperimentRuns() {
+                $.ajax({
+                    url: `{{ url_for('list_runs_of_experiment', experiment_id='${this.selectedExperiment.id}') }}`,
+                    type: 'GET',
+                    beforeSend: (xhr) => {
+                        xhr.setRequestHeader('Authorization', 'Bearer ' + this.accessToken);
+                    },
+                    data: {
+                        'env_id': this.selectedEnvironment.id,
+                        'page': 1,
+                        'page_size': 10,
+                    },
+                    success: (result) => {
+                        this.runs = result;
+                    },
+                    error: function () { },
+                });
+            },
+            loadVariablesOfRun(selectedRun) {
+                $.ajax({
+                    url: `{{ url_for('get_all_variables_of_run', experiment_id='${this.selectedExperiment.id}', run_id='${selectedRun.id}') }}`,
+                    type: 'GET',
+                    beforeSend: (xhr) => {
+                        xhr.setRequestHeader('Authorization', 'Bearer ' + this.accessToken);
+                    },
+                    data: {
+                        'env_id': this.selectedEnvironment.id,
+                        'page': 1,
+                        'page_size': 10,
+                    },
+                    success: (result) => {
+                        for (let i = 0; i < result.length; i++) {
+                            const variable = result[i];
+                            let varName = variable['name'];
+                            this.varNames.add(varName);
+                            variable['run'] = selectedRun;
+                            this.variables.push(variable);
+                        }
+                    },
+                    error: function () { },
+                });
+            },
+            loadVariables() {
+                this.variables = [];
+                this.varNames = new Set();
+                for (let i = 0; i < this.runs.length; i++) {
+                    const run = this.runs[i];
+                    console.log(run);
+                    this.loadVariablesOfRun(run);
+                }
+            }
+        },
+        mounted() {
+            this.loadAccessToken();
+        },
+        watch: {
+            accessToken(newValue, oldValue) {
+                this.loadUser();
+                this.loadEnvironments();
+            },
+            environmentsPageInfo: {
+                handler(newValue, oldValue) {
+                    console.log('Loading Envs');
+                    this.loadEnvironments();
+                },
+                deep: true,
+            },
+            selectedEnvironment(newValue, oldValue) {
+                this.loadExperiments();
+            },
+            selectedExperiment(newValue, oldValue) {
+                this.loadExperimentRuns();
+            },
+            runs(newValue, oldValue) {
+                this.loadVariables();
+            },
+        },
+        compilerOptions: {
+            delimiters: ["${", "}"]
+        }
+    });
+
+    app.mount('#app');
+</script>

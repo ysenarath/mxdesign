@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>MxFlow</title>
+    <link href="{{ url_for('static', path='/assets/vendor/bootstrap/dist/css/bootstrap.css') }}" rel="stylesheet"
+        crossorigin="anonymous">
+</head>
+
+<body id="app">
+    {% include 'includes/navigation.html' %}
+    <main id="mainContainer" class="p-3">
+        ${ this.varNames }
+    </main>
+    <script src="{{ url_for('static', path='/assets/vendor/bootstrap/dist/js/bootstrap.bundle.min.js') }}"></script>
+    <script src="{{ url_for('static', path='/assets/vendor/jquery/dist/js/jquery.min.js') }}"></script>
+    <script src="{{ url_for('static', path='/assets/vendor/vue@3/dist/js/vue.global.js') }}"></script>
+    {% include 'components/main.html' %}
+</body>
+
+</html>
