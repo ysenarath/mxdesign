@@ -138,10 +138,12 @@
             loadVariables() {
                 this.variables = [];
                 this.varNames = new Set();
+                const selectedRunIDs = new Set();
                 for (let i = 0; i < this.runs.length; i++) {
                     const run = this.runs[i];
-                    console.log(run);
-                    this.loadVariablesOfRun(run);
+                    selectedRunIDs.add(run.id)
+                    // console.log(run);
+                    // this.loadVariablesOfRun(run);
                 }
             }
         },
