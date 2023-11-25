@@ -7,13 +7,13 @@ from mxdesign.model.experiment import Experiment
 from mxdesign.model.pagination import Pagination
 
 __all__ = [
-    "Environment",
+    "Client",
 ]
 
 
-class Environment(Model):
+class Client(Model):
     def __init__(self, url: str) -> None:
-        super(Environment, self).__init__()
+        super(Client, self).__init__()
         self.session = LocalSession(
             engine=create_engine(url),
             metadata=metadata,
