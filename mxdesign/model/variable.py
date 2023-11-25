@@ -29,7 +29,6 @@ class Variable(Model):
         Column("value", String, nullable=False),
         Column("type", String, nullable=False),
         Column("dtype", String, nullable=False),
-        Column("step", Integer, nullable=True),
         Column("run_id", ForeignKey("run.id"), nullable=False),
         Index(
             "idx_name_step_run_id",
@@ -45,7 +44,6 @@ class Variable(Model):
         name: str,
         value: Union[str, int, float],
         type: str,
-        step: int,
         run_id: int,
         id: Optional[int] = None,
         dtype: Optional[str] = None,
@@ -61,7 +59,6 @@ class Variable(Model):
                     name=name,
                     value=str(value),
                     type=type,
-                    step=step,
                     dtype=dtype,
                     run_id=run_id,
                 )
@@ -82,7 +79,6 @@ class Variable(Model):
         self._value = value
         self._dtype = dtype
         self._type = type
-        self._step = step
         self._run_id = run_id
 
     @property
@@ -101,16 +97,11 @@ class Variable(Model):
             return float(self._value)
         return str(self._value)
 
-    @property
-    def step(self) -> int:
-        return self._step
-
     def to_dict(self) -> Dict[str, Any]:
         return {
             "id": self._id,
             "name": self._name,
             "value": self.value,
             "type": self._type,
-            "step": self._step,
             "run_id": self._run_id,
         }
